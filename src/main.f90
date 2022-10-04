@@ -12,7 +12,7 @@ contains
     open(unit=314, file=path_file, status="REPLACE")
     write(314, *) vector
     close(314)
-    
+
   end subroutine write_vector
 
   function cast_to_double(vector) result(rs)
@@ -21,11 +21,11 @@ contains
     real(dp), dimension(size(vector))  :: rs
     integer :: i
     do i=1,size(vector)
-       rs(i) = real(vector(i))
+      rs(i) = real(vector(i))
     end do
 
   end function cast_to_double
-  
+
 end module test_utils
 
 program main
@@ -53,22 +53,22 @@ program main
   print *, "GJD algorithm converged in: ", iter_i, " iterations!"
   call generalized_eigensolver(mtx, eigenvalues_DPR, eigenvectors_DPR, 3, "DPR", 100, 1d-5, iter_i, 10, stx)
   print *, "DPR algorithm converged in: ", iter_i, " iterations!"
-  
+
   print *, "Test 1"
   test_norm_eigenvalues = norm(eigenvalues_GJD - eigenvalues_DPR)
   print *, "Check that eigenvalues norm computed by different methods are the same: ", test_norm_eigenvalues < 1e-6
-  
+
   print *, "Test 2"
   print *, "Check that eigenvalue equation:  H V = l S V  holds!"
   print *, "DPR method:"
   do j=1,3
-     xs = matmul(mtx, eigenvectors_DPR(:, j)) - (eigenvalues_DPR(j) * matmul(stx, eigenvectors_DPR(:, j)))
-     print *, "eigenvalue ", j, ": ", eigenvalues_DPR(j), "||Error||: ", norm(xs)
+    xs = matmul(mtx, eigenvectors_DPR(:, j)) - (eigenvalues_DPR(j) * matmul(stx, eigenvectors_DPR(:, j)))
+    print *, "eigenvalue ", j, ": ", eigenvalues_DPR(j), "||Error||: ", norm(xs)
   end do
   print *, "GJD method:"
   do j=1,3
-     xs = matmul(mtx, eigenvectors_GJD(:, j)) - (eigenvalues_GJD(j) * matmul( stx, eigenvectors_GJD(:, j)))
-     print *, "eigenvalue ", j, ": ",eigenvalues_GJD(j), "||Error||: ", norm(xs)
-  end do  
-  
+    xs = matmul(mtx, eigenvectors_GJD(:, j)) - (eigenvalues_GJD(j) * matmul( stx, eigenvectors_GJD(:, j)))
+    print *, "eigenvalue ", j, ": ",eigenvalues_GJD(j), "||Error||: ", norm(xs)
+  end do
+
 end program main

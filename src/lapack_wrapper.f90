@@ -7,11 +7,11 @@ module lapack_wrapper
   private
   !> \public
   public :: lapack_generalized_eigensolver, lapack_generalized_eigensolver_lowest, &
-       lapack_matmul, lapack_matrix_vector, lapack_qr, lapack_solver, lapack_sort
+    lapack_matmul, lapack_matrix_vector, lapack_qr, lapack_solver, lapack_sort
 
 contains
 
-    subroutine lapack_generalized_eigensolver(mtx, eigenvalues, eigenvectors, stx)
+  subroutine lapack_generalized_eigensolver(mtx, eigenvalues, eigenvectors, stx)
     !> Call the DSYGV subroutine lapack to compute ALL the eigenvalues
     !> and corresponding eigenvectors of mtx
     !> \param mtx: Matrix to diaogonalize
@@ -35,7 +35,7 @@ contains
     integer :: dim, info, lwork, itype = 1
     logical :: gev
 
-     ! ALL the eigenvalues of the subpace (re, im)
+    ! ALL the eigenvalues of the subpace (re, im)
     real(dp), dimension(size(mtx, 1)) :: eigenvalues_work
     real(dp), dimension(:), allocatable :: work ! workspace, see lapack documentation
 
@@ -119,7 +119,7 @@ contains
     integer, dimension(size(mtx, 1)) :: ifail
 
 
-     ! ALL the eigenvalues of the subpace (re, im)
+    ! ALL the eigenvalues of the subpace (re, im)
     real(dp), dimension(size(mtx, 1)) :: eigenvalues_work
     real(dp), dimension(size(mtx, 1), lowest) :: eigenvectors_work
     real(dp), dimension(:), allocatable :: work ! workspace, see lapack documentation
@@ -146,8 +146,8 @@ contains
     allocate(iwork(1))
 
     call DSYGVX(itype,"V", "I", "U", dim, mtx_copy, dim, stx_copy, dim, vl, vu, &
-         1, lowest, abstol, m, eigenvalues_work, eigenvectors_work, &
-         dim, work, -1, iwork, ifail, info)
+      1, lowest, abstol, m, eigenvalues_work, eigenvectors_work, &
+      dim, work, -1, iwork, ifail, info)
     call check_lapack_call(info, "DSYGVX")
 
     ! Allocate memory for the workspace
@@ -159,8 +159,8 @@ contains
     ! Compute Eigenvalues
 
     call DSYGVX(itype,"V", "I", "U", dim, mtx_copy, dim, stx_copy, dim, vl, vu, &
-         1, lowest, abstol, m, eigenvalues_work, eigenvectors_work, &
-         dim, work, lwork, iwork, ifail, info)
+      1, lowest, abstol, m, eigenvalues_work, eigenvectors_work, &
+      dim, work, lwork, iwork, ifail, info)
 
     call check_lapack_call(info, "DSYGVX")
 
@@ -267,16 +267,16 @@ contains
     ! If the diagonalization fails due to a singular value try to recover
     ! by replacing the 0 value with a tiny one
     if (info > 0) then
-       arr(info, info) = tiny(arr(1, 1))
-       call DSYSV("U", n, 1, arr, n, ipiv, brr, n, work, lwork, info)
-       call check_lapack_call(info, "DSYSV")
+      arr(info, info) = tiny(arr(1, 1))
+      call DSYSV("U", n, 1, arr, n, ipiv, brr, n, work, lwork, info)
+      call check_lapack_call(info, "DSYSV")
     end if
 
     deallocate(work)
 
   end subroutine lapack_solver
 
-    function lapack_matmul(transA, transB, arr, brr, alpha) result (mtx)
+  function lapack_matmul(transA, transB, arr, brr, alpha) result (mtx)
     !> perform the matrix multiplication alpha * arr ^ (transA) * brr ^ (transB)
     !> see Lapack DGEMM for further details
     !> \param transA: 'T' transpose A, 'N' do not tranpose
@@ -302,21 +302,21 @@ contains
     if (present(alpha)) x=alpha
 
     if (transA == 'T') then
-       k = size(arr, 1)
-       m = size(arr, 2)
-       lda = k
+      k = size(arr, 1)
+      m = size(arr, 2)
+      lda = k
     else
-       k = size(arr, 2)
-       m = size(arr, 1)
-       lda = m
+      k = size(arr, 2)
+      m = size(arr, 1)
+      lda = m
     end if
 
     if (transB == 'T') then
-       n = size(brr, 1)
-       ldb = n
+      n = size(brr, 1)
+      ldb = n
     else
-       n = size(brr, 2)
-       ldb = k
+      n = size(brr, 2)
+      ldb = k
     end if
 
     ! resulting array
@@ -382,11 +382,11 @@ contains
     call check_lapack_call(info, "DLASRT")
 
     do i=1,size(vector)
-       do j=1, size(vector)
-          if (abs(vector(j) - xs(i)) < 1e-16) then
-             keys(i) = j
-          end if
-       end do
+      do j=1, size(vector)
+        if (abs(vector(j) - xs(i)) < 1e-16) then
+          keys(i) = j
+        end if
+      end do
     end do
 
   end function lapack_sort
@@ -400,9 +400,9 @@ contains
     character(len=*), intent(in) :: name
 
     if (info /= 0) then
-       print *, "call to subroutine: ", name, " has failed!"
-       print *, "info: ", info
-       error stop
+      print *, "call to subroutine: ", name, " has failed!"
+      print *, "info: ", info
+      error stop
     end if
 
   end subroutine check_lapack_call
