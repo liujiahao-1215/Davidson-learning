@@ -11,7 +11,7 @@ module lapack_wrapper
 
 contains
 
-  subroutine lapack_generalized_eigensolver(mtx, eigenvalues, eigenvectors, stx)
+  subroutine  lapack_generalized_eigensolver(mtx, eigenvalues, eigenvectors, stx)
     !> Call the DSYGV subroutine lapack to compute ALL the eigenvalues
     !> and corresponding eigenvectors of mtx
     !> \param mtx: Matrix to diaogonalize
@@ -22,13 +22,13 @@ contains
 
     ! input/output
     implicit none
-    real(dp), dimension(:, :), intent(in) :: mtx
-    real(dp), dimension(:, :), intent(in), optional :: stx
+    complex(dp), dimension(:, :), intent(in) :: mtx
+    complex(dp), dimension(:, :), intent(in), optional :: stx
     real(dp), dimension(size(mtx, 1)), intent(inout) :: eigenvalues
-    real(dp), dimension(size(mtx, 1), size(mtx, 2)), intent(inout) :: eigenvectors
+    complex(dp), dimension(size(mtx, 1), size(mtx, 2)), intent(inout) :: eigenvectors
 
-    real(dp), dimension(:, :), allocatable :: mtx_copy
-    real(dp), dimension(:, :), allocatable :: stx_copy
+    complex(dp), dimension(:, :), allocatable :: mtx_copy
+    complex(dp), dimension(:, :), allocatable :: stx_copy
 
 
     ! Local variables
@@ -37,7 +37,8 @@ contains
 
     ! ALL the eigenvalues of the subpace (re, im)
     real(dp), dimension(size(mtx, 1)) :: eigenvalues_work
-    real(dp), dimension(:), allocatable :: work ! workspace, see lapack documentation
+    complex(dp), dimension(:), allocatable :: work ! workspace, see lapack documentation
+    real(dp), dimension(max(1, 3*size(mtx,1)-2)) :: rwork
 
     ! ! dimension of the guess space
     dim = size(mtx, 1)
@@ -56,11 +57,11 @@ contains
     allocate(work(1))
 
     if (gev) then
-      call DSYGV(itype,"V", "U", dim, mtx_copy, dim, stx_copy, dim, eigenvalues_work, work, -1, info)
-      call check_lapack_call(info, "DSYGV")
+      call ZHEGV(itype,"V", "U", dim, mtx_copy, dim, stx_copy, dim, eigenvalues_work, work, -1, rwork, info)
+      call check_lapack_call(info, "ZHEGV")
     else
-      call DSYEV("V", "U", dim, mtx_copy, dim, eigenvalues_work, work, -1, info)
-      call check_lapack_call(info, "DSYEV")
+      call ZHEEV("V", "U", dim, mtx_copy, dim, eigenvalues_work, work, -1, rwork, info)
+      call check_lapack_call(info, "ZHEEV")
     end if
 
     ! Allocate memory for the workspace
@@ -70,11 +71,11 @@ contains
 
     ! Compute Eigenvalues
     if (gev) then
-      call DSYGV(itype,"V", "U", dim, mtx_copy, dim, stx_copy, dim, eigenvalues_work, work, lwork, info)
-      call check_lapack_call(info, "DSYGV")
+      call ZHEGV(itype,"V", "U", dim, mtx_copy, dim, stx_copy, dim, eigenvalues_work, work, lwork, rwork, info)
+      call check_lapack_call(info, "ZHEGV")
     else
-      call DSYEV("V", "U", dim, mtx_copy, dim, eigenvalues_work, work, lwork, info)
-      call check_lapack_call(info, "DSYEV")
+      call ZHEEV("V", "U", dim, mtx_copy, dim, eigenvalues_work, work, lwork, rwork, info)
+      call check_lapack_call(info, "ZHEEV")
     end if
 
     ! Sort the eigenvalues and eigenvectors of the basis
@@ -190,9 +191,9 @@ contains
     !> \return orthogonal basis
 
     implicit none
-    real(dp), dimension(:, :), intent(inout) :: basis
-    real(dp), dimension(:), allocatable :: work ! workspace, see lapack documentation
-    real(dp), dimension(size(basis, 2)) :: tau ! see DGEQRF documentation
+    complex(dp), dimension(:, :), intent(inout) :: basis
+    complex(dp), dimension(:), allocatable :: work ! workspace, see lapack documentation
+    complex(dp), dimension(size(basis, 2)) :: tau ! see DGEQRF documentation
     integer :: info, lwork, m, n
 
     ! Matrix shape
@@ -202,8 +203,8 @@ contains
     ! 1. Call the QR decomposition
     ! 1.1 Query size of the workspace (Check lapack documentation)
     allocate(work(1))
-    call DGEQRF(m, n, basis, m, tau, work, -1, info)
-    call check_lapack_call(info, "DGEQRF")
+    call ZGEQRF(m, n, basis, m, tau, work, -1, info)
+    call check_lapack_call(info, "ZGEQRF")
 
     ! 1.2 Allocate memory for the workspace
     lwork = max(1, int(work(1)))
@@ -211,15 +212,15 @@ contains
     allocate(work(lwork))
 
     ! 1.3 Call QR factorization
-    call DGEQRF(m, n, basis, m, tau, work, lwork, info)
-    call check_lapack_call(info, "DGEQRF")
+    call ZGEQRF(m, n, basis, m, tau, work, lwork, info)
+    call check_lapack_call(info, "ZGEQRF")
     deallocate(work)
 
     ! 2. Generates an orthonormal matrix
     ! 2.1 Query size of the workspace (Check lapack documentation)
     allocate(work(1))
-    call DORGQR(m, n, min(m, n), basis, m, tau, work, -1, info)
-    call check_lapack_call(info, "DORGQR")
+    call ZUNGQR(m, n, min(m, n), basis, m, tau, work, -1, info)
+    call check_lapack_call(info, "ZUNGQR")
 
     ! 2.2 Allocate memory fo the workspace
     lwork = max(1, int(work(1)))
@@ -227,8 +228,8 @@ contains
     allocate(work(lwork))
 
     ! 2.3 compute the matrix Q
-    call DORGQR(m, n, min(m, n), basis, m, tau, work, lwork, info)
-    call check_lapack_call(info, "DORGQR")
+    call ZUNGQR(m, n, min(m, n), basis, m, tau, work, lwork, info)
+    call check_lapack_call(info, "ZUNGQR")
 
     ! release memory
     deallocate(work)
@@ -243,10 +244,10 @@ contains
 
     implicit none
 
-    real(dp), dimension(:, :), intent(inout) :: arr, brr
+    complex(dp), dimension(:, :), intent(inout) :: arr, brr
 
     ! local variables
-    real(dp), dimension(:), allocatable :: work
+    complex(dp), dimension(:), allocatable :: work
     integer :: n, info, lwork
     integer, dimension(size(arr, 1)) :: ipiv
 
@@ -254,7 +255,7 @@ contains
 
     ! query spacework size
     allocate(work(1))
-    call DSYSV("U", n, 1, arr, n, ipiv, brr, n, work, -1, info)
+    call ZHESV("U", n, 1, arr, n, ipiv, brr, n, work, -1, info)
     call check_lapack_call(info, "DSYSV")
 
     ! Allocate memory fo the workspace
@@ -263,13 +264,13 @@ contains
     allocate(work(lwork))
 
     ! run linear solver
-    call DSYSV("U", n, 1, arr, n, ipiv, brr, n, work, lwork, info)
+    call ZHESV("U", n, 1, arr, n, ipiv, brr, n, work, lwork, info)
     ! If the diagonalization fails due to a singular value try to recover
     ! by replacing the 0 value with a tiny one
     if (info > 0) then
-      arr(info, info) = tiny(arr(1, 1))
-      call DSYSV("U", n, 1, arr, n, ipiv, brr, n, work, lwork, info)
-      call check_lapack_call(info, "DSYSV")
+      arr(info, info) = tiny(abs(arr(1, 1)))
+      call ZHESV("U", n, 1, arr, n, ipiv, brr, n, work, lwork, info)
+      call check_lapack_call(info, "ZHESV")
     end if
 
     deallocate(work)
@@ -279,8 +280,8 @@ contains
   function lapack_matmul(transA, transB, arr, brr, alpha) result (mtx)
     !> perform the matrix multiplication alpha * arr ^ (transA) * brr ^ (transB)
     !> see Lapack DGEMM for further details
-    !> \param transA: 'T' transpose A, 'N' do not tranpose
-    !> \param transB: 'T' transpose B, 'N' do not tranpose
+    !> \param transA: 'C' hermitian A, 'T' transpose A, 'N' do not tranpose
+    !> \param transB: 'C' hermitian B, 'N' do not tranpose
     !> \param arr: first matrix to multiply
     !> \param brr: second matrix
     !> \param alpha: optional scalar number
@@ -289,19 +290,19 @@ contains
     implicit none
 
     character(len=1), intent(in) :: transA, transB
-    real(dp), dimension(:, :), intent(in) :: arr, brr
-    real(dp), optional, intent(in) :: alpha
-    real(dp), dimension(:, :), allocatable :: mtx
+    complex(dp), dimension(:, :), intent(in) :: arr, brr
+    complex(dp), optional, intent(in) :: alpha
+    complex(dp), dimension(:, :), allocatable :: mtx
 
     ! local variables
-    real(dp) :: x
+    complex(dp) :: x
     integer :: m, n, k, lda, ldb
     x = 1.d0
 
     ! check optional variable
     if (present(alpha)) x=alpha
 
-    if (transA == 'T') then
+    if (transA == 'T' .or. transA == 'C') then
       k = size(arr, 1)
       m = size(arr, 2)
       lda = k
@@ -311,7 +312,7 @@ contains
       lda = m
     end if
 
-    if (transB == 'T') then
+    if (transB == 'T' .or. transB == 'C') then
       n = size(brr, 1)
       ldb = n
     else
@@ -323,7 +324,7 @@ contains
     allocate(mtx(m, n))
     mtx = 0.d0
 
-    call DGEMM(transA, transB, m, n, k, x, arr, lda, brr, ldb, 0.d0, mtx, m)
+    call ZGEMM(transA, transB, m, n, k, x, arr, lda, brr, ldb, 0.d0, mtx, m)
 
   end function lapack_matmul
 
@@ -339,14 +340,14 @@ contains
     implicit none
 
     character(len=1), intent(in) :: transA
-    real(dp), dimension(:, :), intent(in) :: mtx
-    real(dp), dimension(:), intent(in) :: vector
-    real(dp), optional, intent(in) :: alpha
-    real(dp), dimension(:), allocatable :: rs
+    complex(dp), dimension(:, :), intent(in) :: mtx
+    complex(dp), dimension(:), intent(in) :: vector
+    complex(dp), optional, intent(in) :: alpha
+    complex(dp), dimension(:), allocatable :: rs
 
     ! local variable
     integer :: m, n
-    real(dp) :: scalar
+    complex (dp) :: scalar
     scalar = 1.d0
 
     ! check optional variable
@@ -359,7 +360,7 @@ contains
     allocate(rs(m))
     rs = 0.d0
 
-    call DGEMV(transA, m, n, scalar, mtx, m, vector, 1, 0.d0, rs, 1)
+    call ZGEMV(transA, m, n, scalar, mtx, m, vector, 1, (0.d0,0.d0), rs, 1)
 
   end function lapack_matrix_vector
 

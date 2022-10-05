@@ -7,7 +7,7 @@ contains
   subroutine write_vector(path_file, vector)
     !> Write vector to path_file
     character(len=*), intent(in) :: path_file
-    real(dp), dimension(:) :: vector
+    complex(dp), dimension(:) :: vector
 
     open(unit=314, file=path_file, status="REPLACE")
     write(314, *) vector
@@ -38,21 +38,22 @@ program main
   implicit none
 
   integer, parameter :: dim = 100
-  real(dp), dimension(3) :: eigenvalues_DPR, eigenvalues_GJD
-  real(dp), dimension(dim, 3) :: eigenvectors_DPR, eigenvectors_GJD
-  real(dp), dimension(dim, dim) :: mtx
-  real(dp), dimension(dim, dim) :: stx
+  integer, parameter :: lowest = 6
+  real(dp), dimension(lowest) :: eigenvalues_DPR, eigenvalues_GJD
+  complex(dp), dimension(dim, lowest) :: eigenvectors_DPR, eigenvectors_GJD
+  complex(dp), dimension(dim, dim) :: mtx
+  complex(dp), dimension(dim, dim) :: stx
   real(dp) :: test_norm_eigenvalues
-  real(dp), dimension(dim) :: xs
+  complex(dp), dimension(dim) :: xs
   integer :: iter_i, j
 
-  mtx = generate_diagonal_dominant(dim, 1d-3)
+  mtx = generate_diagonal_dominant(dim, 1d-2)
   stx = generate_diagonal_dominant(dim, 1d-3, 1d0)
 
-  call generalized_eigensolver(mtx, eigenvalues_GJD, eigenvectors_GJD, 3, "GJD", 100, 1d-5, iter_i, 10, stx)
-  print *, "GJD algorithm converged in: ", iter_i, " iterations!"
-  call generalized_eigensolver(mtx, eigenvalues_DPR, eigenvectors_DPR, 3, "DPR", 100, 1d-5, iter_i, 10, stx)
+  call generalized_eigensolver(mtx, eigenvalues_DPR, eigenvectors_DPR, lowest, "DPR", 100, 1d-8, iter_i, 60, stx)
   print *, "DPR algorithm converged in: ", iter_i, " iterations!"
+  call generalized_eigensolver(mtx, eigenvalues_GJD, eigenvectors_GJD, lowest, "GJD", 100, 1d-8, iter_i, 60, stx)
+  print *, "GJD algorithm converged in: ", iter_i, " iterations!"
 
   print *, "Test 1"
   test_norm_eigenvalues = norm(eigenvalues_GJD - eigenvalues_DPR)
@@ -61,12 +62,12 @@ program main
   print *, "Test 2"
   print *, "Check that eigenvalue equation:  H V = l S V  holds!"
   print *, "DPR method:"
-  do j=1,3
+  do j=1,lowest
     xs = matmul(mtx, eigenvectors_DPR(:, j)) - (eigenvalues_DPR(j) * matmul(stx, eigenvectors_DPR(:, j)))
     print *, "eigenvalue ", j, ": ", eigenvalues_DPR(j), "||Error||: ", norm(xs)
   end do
   print *, "GJD method:"
-  do j=1,3
+  do j=1,lowest
     xs = matmul(mtx, eigenvectors_GJD(:, j)) - (eigenvalues_GJD(j) * matmul( stx, eigenvectors_GJD(:, j)))
     print *, "eigenvalue ", j, ": ",eigenvalues_GJD(j), "||Error||: ", norm(xs)
   end do

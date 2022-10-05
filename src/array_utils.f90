@@ -11,6 +11,11 @@ module array_utils
   public :: concatenate, diagonal,eye, generate_diagonal_dominant, norm, &
     generate_preconditioner
 
+  interface norm
+    !> compute the norm-2 of a vector
+    procedure norm_r, norm_c
+  end interface norm
+
 contains
 
   pure function eye(m, n, alpha)
@@ -43,14 +48,21 @@ contains
 
   end function eye
 
-  pure function norm(vector)
-    !> compute the norm-2 of a vector
+  pure function norm_c(vector)
+    complex(dp), dimension(:), intent(in) :: vector
+    real(dp) :: norm_c
+
+    norm_c = sqrt(sum(abs(vector) ** 2.d0))
+
+  end function norm_c
+
+  pure function norm_r(vector)
     real(dp), dimension(:), intent(in) :: vector
-    real(dp) :: norm
+    real(dp) :: norm_r
 
-    norm = sqrt(sum(vector ** 2.d0))
+    norm_r = sqrt(sum(vector ** 2.d0))
 
-  end function norm
+  end function norm_r
 
   subroutine concatenate(arr, brr)
 
@@ -59,9 +71,9 @@ contains
     !> \param brr: second array
     !> \return arr concatenate brr (overwrites arr)
 
-    real(dp), dimension(:, :), intent(inout), allocatable :: arr
-    real(dp), dimension(:, :), intent(in) :: brr
-    real(dp), dimension(:, :), allocatable :: tmp_array
+    complex(dp), dimension(:, :), intent(inout), allocatable :: arr
+    complex(dp), dimension(:, :), intent(in) :: brr
+    complex(dp), dimension(:, :), allocatable :: tmp_array
     integer :: new_dim, dim_cols, dim_rows
 
     ! dimension
@@ -92,14 +104,19 @@ contains
     real(dp), optional :: diag_val
     integer :: i, j
     real(dp) :: sparsity
-    real(dp), dimension(m, m) :: arr
-    call random_number(arr)
+    complex(dp), dimension(m, m) :: arr
 
-    arr = arr * sparsity
+    ! Local variables
+    real(dp), dimension(m, m) :: rea, img
+
+    call random_number(rea)
+    call random_number(img)
+
+    arr = cmplx(rea, img, dp) * sparsity
     do j=1, m
       do i=1, m
         if (i > j) then
-          arr(i, j) = arr(j, i)
+          arr(i, j) = conjg(arr(j, i))
         else if(i == j) then
           if (present(diag_val))then
             arr(i, i) = diag_val
@@ -114,21 +131,17 @@ contains
 
   function diagonal(matrix)
     !> return the diagonal of a matrix
-    real(dp), dimension(:, :), intent(in) :: matrix
-    real(dp), dimension(size(matrix, 1)) :: diagonal
+    complex(dp), dimension(:, :), intent(in) :: matrix
+    complex(dp), dimension(size(matrix, 1)) :: diagonal
 
     ! local variables
-    integer :: i, j, m
+    integer :: i, m
 
     ! dimension of the matrix
     m = size(matrix, 1)
 
     do i=1,m
-      do j=1,m
-        if  (i == j) then
-          diagonal(i) = matrix(i, j)
-        end if
-      end do
+      diagonal(i) = matrix(i, i)
     end do
 
   end function diagonal
@@ -138,44 +151,29 @@ contains
     !> \return diagonal matrix
 
     ! input variable
-    real(dp), dimension(:), intent(inout) :: diag
+    complex(dp), dimension(:), intent(inout) :: diag
     integer, intent(in) :: dim_sub
 
     ! local variables
-    real(dp), dimension(size(diag), dim_sub) :: precond
-    integer, dimension(size(diag)) :: keys
+    complex(dp), dimension(size(diag), dim_sub) :: precond
+    real(dp), dimension(size(diag)) :: r_diag
+    logical(dp), dimension(size(diag)) :: mask
     integer :: i, k
 
-    ! sort diagonal
-    keys = lapack_sort('I', diag)
+    ! Initialize the norm of diag and mask for minloc
+    r_diag = abs(diag)
+    mask = .true.
+
     ! Fill matrix with zeros
     precond = 0.0_dp
 
     ! Add one depending on the order of the matrix diagonal
     do i=1, dim_sub
-      k = search_key(keys, i)
+      k = minloc(r_diag, dim=1, mask=mask)
+      mask(k) = .false.
       precond(k, i) = 1.d0
     end do
 
   end function generate_preconditioner
-
-  function search_key(keys, i) result(k)
-    !> \brief Search for a given index `i` in a vector `keys`
-    !> \param keys Vector of index
-    !> \param i Index to search for
-    !> \return index of i inside keys
-
-    integer, dimension(:), intent(in) :: keys
-    integer, intent(in) :: i
-    integer :: j, k
-
-    do j=1,size(keys)
-      if (keys(j) == i) then
-        k = j
-        exit
-      end if
-    end do
-
-  end function search_key
 
 end module array_utils
