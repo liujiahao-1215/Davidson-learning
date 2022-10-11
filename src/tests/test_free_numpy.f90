@@ -11,8 +11,8 @@ program main
   integer, parameter :: dim = 50
   integer, parameter :: lowest = 3
   real(dp), dimension(3) :: eigenvalues_DPR
-  real(dp), dimension(dim, 3) :: eigenvectors_DPR
-  real(dp), dimension(dim, dim) :: mtx, stx
+  complex(dp), dimension(dim, 3) :: eigenvectors_DPR
+  complex(dp), dimension(dim, dim) :: mtx, stx
   integer :: iter_i, j
 
   do j=1, dim

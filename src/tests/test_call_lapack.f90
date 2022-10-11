@@ -8,8 +8,8 @@ program main
 
   integer, parameter :: dim = 50
   real(dp), dimension(dim) :: eigenvalues
-  real(dp), dimension(dim, dim) :: eigenvectors
-  real(dp), dimension(dim, dim) :: copy, mtx, stx
+  complex(dp), dimension(dim, dim) :: eigenvectors
+  complex(dp), dimension(dim, dim) :: copy, mtx, stx
 
   ! mtx = read_matrix("tests/matrix.txt", 100)
   mtx = generate_diagonal_dominant(dim, 1d-3)

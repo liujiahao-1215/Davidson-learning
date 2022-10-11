@@ -14,8 +14,8 @@ contains
     !> \param[in] i column/row to compute from mtx
     !> \param vec column/row from mtx
     
-    real (dp), dimension(:,:), intent(in) :: input_vect
-    real (dp), dimension(size(input_vect,1),size(input_vect,2)) :: output_vect
+    complex (dp), dimension(:,:), intent(in) :: input_vect
+    complex (dp), dimension(size(input_vect,1),size(input_vect,2)) :: output_vect
 
     output_vect = free_matmul(compute_matrix_on_the_fly,input_vect)
 
@@ -26,8 +26,8 @@ contains
     !> \param[in] i column/row to compute from mtx
     !> \param vec column/row from mtx
     
-    real (dp), dimension(:,:), intent(in) :: input_vect
-    real (dp), dimension(size(input_vect,1),size(input_vect,2)) :: output_vect
+    complex (dp), dimension(:,:), intent(in) :: input_vect
+    complex (dp), dimension(size(input_vect,1),size(input_vect,2)) :: output_vect
 
     output_vect = free_matmul(compute_stx_on_the_fly,input_vect)
 
@@ -40,13 +40,13 @@ contains
     !> \return the i-th column of a square matrix of dimension dim
     
     integer, intent(in) :: i, dim
-    real(dp), dimension(dim) :: vector
+    complex(dp), dimension(dim) :: vector
 
     ! call expensive function
     vector = expensive_function_1(i, dim)
 
     ! set the diagonal value
-    vector(i) = vector(i) + real(i)
+    vector(i) = vector(i) + i
 
   end function compute_matrix_on_the_fly
 
@@ -57,7 +57,7 @@ contains
     !> \return the i-th column of a square matrix of dimension dim
 
     integer, intent(in) :: i, dim
-    real(dp), dimension(dim) :: vector
+    complex(dp), dimension(dim) :: vector
 
     ! call expensive function
     vector = expensive_function_2(i, dim)
@@ -73,7 +73,7 @@ contains
     !> expensive function to test matrix free version
 
     integer, intent(in) :: i, dim
-    real(dp), dimension(dim) :: vector
+    complex(dp), dimension(dim) :: vector
     
     ! local variable
     integer :: j
@@ -96,7 +96,7 @@ contains
     !> expensive function to test matrix free version
     
     integer, intent(in) :: i, dim
-    real(dp), dimension(dim) :: vector
+    complex(dp), dimension(dim) :: vector
     
     ! local variable
     integer :: j
@@ -123,12 +123,14 @@ contains
 
     character(len=*), intent(in) :: path_file
     integer, intent(in) :: dim
-    real(dp), dimension(dim, dim) :: mtx
+    complex(dp), dimension(dim, dim) :: mtx
+    real(dp), dimension(dim, dim) :: r_mtx
     integer :: i
     
     open(unit=3541, file=path_file, status="OLD")
     do i=1,dim
-       read(3541, *) mtx(i, :)
+       read(3541, *) r_mtx(i, :)
+       mtx(i, :) = r_mtx(i, :)
     end do
     close(3541)
     
@@ -153,7 +155,7 @@ contains
   subroutine write_matrix(path_file, mtx)
     !> Write matrix to path_file
     character(len=*), intent(in) :: path_file
-    real(dp), dimension(:, :), intent(in) :: mtx
+    complex(dp), dimension(:, :), intent(in) :: mtx
     integer :: i, j
 
     open(unit=314, file=path_file, status="REPLACE")

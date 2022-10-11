@@ -9,9 +9,9 @@ program main
   integer, parameter :: dim = 50
   integer, parameter :: lowest = 3
   real(dp), dimension(3) :: eigenvalues_DPR, eigenvalues_GJD
-  real(dp), dimension(dim, 3) :: eigenvectors_DPR, eigenvectors_GJD
-  real(dp), dimension(dim, dim) :: mtx
-  real(dp), dimension(dim) :: xs, ys, zs
+  complex(dp), dimension(dim, 3) :: eigenvectors_DPR, eigenvectors_GJD
+  complex(dp), dimension(dim, dim) :: mtx
+  complex(dp), dimension(dim) :: xs, ys, zs
   real(dp) :: test_norm_eigenvalues
   integer :: iter_i, j
 
@@ -39,9 +39,9 @@ program main
   end do
 
   print *, "Test 3"
-  print *, "If V are the eigenvector then V * V^T = I"
-  ys = diagonal(matmul(eigenvectors_GJD, transpose(eigenvectors_GJD)))
-  zs = diagonal(matmul(eigenvectors_DPR, transpose(eigenvectors_DPR)))
+  print *, "If V are the eigenvector then V * V^H = I"
+  ys = diagonal(matmul(eigenvectors_GJD, transpose(conjg(eigenvectors_GJD))))
+  zs = diagonal(matmul(eigenvectors_DPR, transpose(conjg(eigenvectors_DPR))))
   ! There are only 3 eigenvectors
   print *, "GJD method: ", norm(xs(:3)) < sqrt(real(lowest))
   print *, "DPR method: ", norm(ys(:3)) < sqrt(real(lowest))

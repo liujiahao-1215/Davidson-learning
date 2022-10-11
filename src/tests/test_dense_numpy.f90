@@ -9,8 +9,8 @@ program main
   integer, parameter :: dim = 50
   integer, parameter :: lowest = 3
   real(dp), dimension(3) :: eigenvalues_DPR, eigenvalues_GJD, eigenvalues_DPR_gen, eigenvalues_GJD_gen
-  real(dp), dimension(dim, 3) :: eigenvectors_DPR, eigenvectors_GJD, eigenvectors_DPR_gen, eigenvectors_GJD_gen
-  real(dp), dimension(dim, dim) ::  mtx, stx
+  complex(dp), dimension(dim, 3) :: eigenvectors_DPR, eigenvectors_GJD, eigenvectors_DPR_gen, eigenvectors_GJD_gen
+  complex(dp), dimension(dim, dim) ::  mtx, stx
   integer :: iter_i
 
   ! mtx = read_matrix("tests/matrix.txt", 100)

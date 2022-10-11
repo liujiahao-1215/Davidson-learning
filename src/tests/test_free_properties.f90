@@ -9,9 +9,9 @@ program main
 
   integer, parameter :: dim = 50
   real(dp), dimension(3) :: eigenvalues_DPR
-  real(dp), dimension(dim, 3) :: eigenvectors_DPR
-  real(dp), dimension(dim) :: xs, zs
-  real(dp), dimension(dim, dim) :: mtx, stx
+  complex(dp), dimension(dim, 3) :: eigenvectors_DPR
+  complex(dp), dimension(dim) :: xs, zs
+  complex(dp), dimension(dim, dim) :: mtx, stx
   integer :: iter_i, j
 
   do j=1, dim
@@ -34,8 +34,8 @@ program main
   end do
   
   print *, "Test 2"
-  print *, "If V are the eigenvector then V * V^T = I"
-  zs = diagonal(matmul(eigenvectors_DPR, transpose(eigenvectors_DPR)))
+  print *, "If V are the eigenvector then V * V^H = I"
+  zs = diagonal(matmul(eigenvectors_DPR, transpose(conjg(eigenvectors_DPR))))
   ! There are only 3 eigenvectors
   print "(a, l)", "DPR method: ", norm(zs(:3)) < sqrt(3.d0)
 
