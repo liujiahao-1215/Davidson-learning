@@ -429,7 +429,7 @@ contains
          case ("DPR")
           correction = compute_DPR_free(matrixV, eigenvalues_sub, residues, diag_matrix, diag_second_matrix)
          case default
-          stop "Method not supported!"
+          error stop "Method not supported!"
         end select
         ! 6. Increase Basis size
         call concatenate(V, correction)
@@ -672,7 +672,7 @@ contains
         correction = compute_GJD_generalized_dense(matrix, eigenvalues, ritz_vectors, residues)
       end if
      case default
-      stop "Method not supported!"
+      error stop "Method not supported!"
     end select
 
   end function compute_correction_generalized_dense
