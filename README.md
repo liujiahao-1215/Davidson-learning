@@ -11,9 +11,9 @@ Available correction methods are:
 
 
 ### Note:
-The Davidson method is suitable for **diagonal-dominant symmetric matrices**, that are quite common
+The Davidson method is suitable for **diagonal-dominant hermitian matrices**, that are quite common
 in certain scientific problems like [electronic structure](https://en.wikipedia.org/wiki/Electronic_structure). The Davidson method could be not practical
-for other kinds of symmetric matrices.
+for other kinds of hermitian matrices.
 
 Usage
 -----
@@ -29,9 +29,9 @@ program main
 
   integer, parameter :: dim = 50
   integer, parameter :: lowest = 3
-  real(dp), dimension(dim, dim) :: matrix, second_matrix
+  complex(dp), dimension(dim, dim) :: matrix, second_matrix
   real(dp), dimension(lowest) :: eigenvalues
-  real(dp), dimension(dim, lowest) :: eigenvectors
+  complex(dp), dimension(dim, lowest) :: eigenvectors
   real(dp) :: tolerance
   integer:: max_dim_subspace, max_iterations, lowest
 
@@ -94,7 +94,7 @@ cmake -H. -Bbuild  -DCMAKE_BUILD_TYPE=Debug && cmake --build build
 Dependencies
 ------------
 This packages assumes that you have installed the following packages:
- * A Fortran compiler >=  version 6.0 
+ * A Fortran compiler >=  version 7.0 
  * [CMake](https://cmake.org/)
  * [Lapack](http://www.netlib.org/lapack/)
 	
