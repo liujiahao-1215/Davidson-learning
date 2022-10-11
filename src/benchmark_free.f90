@@ -13,8 +13,8 @@ contains
     !> \param[in] i column/row to compute from mtx
     !> \param vec column/row from mtx
 
-    real (dp), dimension(:,:), intent(in) :: input_vect
-    real (dp), dimension(size(input_vect,1),size(input_vect,2)) :: output_vect
+    complex (dp), dimension(:,:), intent(in) :: input_vect
+    complex (dp), dimension(size(input_vect,1),size(input_vect,2)) :: output_vect
 
     output_vect = free_matmul(compute_matrix_on_the_fly,input_vect)
 
@@ -26,8 +26,8 @@ contains
     !> \param[in] i column/row to compute from mtx
     !> \param vec column/row from mtx
 
-    real (dp), dimension(:,:), intent(in) :: input_vect
-    real (dp), dimension(size(input_vect,1),size(input_vect,2)) :: output_vect
+    complex (dp), dimension(:,:), intent(in) :: input_vect
+    complex (dp), dimension(size(input_vect,1),size(input_vect,2)) :: output_vect
 
     output_vect = free_matmul(compute_stx_on_the_fly,input_vect)
 
@@ -40,7 +40,7 @@ contains
     !> \return the i-th column of a square matrix of dimension dim
 
     integer, intent(in) :: i, dim
-    real(dp), dimension(dim) :: vector
+    complex(dp), dimension(dim) :: vector
 
     ! local variable
     integer :: j
@@ -68,7 +68,7 @@ contains
     !> \return the i-th column of a square matrix of dimension dim
 
     integer, intent(in) :: i, dim
-    real(dp), dimension(dim) :: vector
+    complex(dp), dimension(dim) :: vector
 
     vector = 0d0
     vector(i) = 1d0
@@ -88,9 +88,9 @@ program main
   integer, parameter :: dim = 1000
   integer, parameter :: lowest = 3
   real(dp), dimension(lowest) :: eigenvalues_DPR
-  real(dp), dimension(dim, lowest) :: eigenvectors_DPR
-  real(dp), dimension(dim) :: xs
-  real(dp), dimension(dim, dim) :: mtx, stx
+  complex(dp), dimension(dim, lowest) :: eigenvectors_DPR
+  complex(dp), dimension(dim) :: xs
+  complex(dp), dimension(dim, dim) :: mtx, stx
   integer :: iter_i, j
 
   do j=1, dim
