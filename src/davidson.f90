@@ -495,11 +495,11 @@ contains
     !> \brief extract the diagonal of the matrix
     !> \param dim: dimension of the matrix
 
+    use omp_lib
 
     implicit none
     integer, intent(in) :: dim
     complex(dp), dimension(dim) :: out
-
 
     interface
       function fun_gemv(input_vect) result(output_vect)
@@ -515,15 +515,24 @@ contains
 
     ! local variable
     integer :: ii
+    integer :: M
+    integer :: S = 4
     complex(dp), dimension(dim,1) :: tmp_array
+    
+    call omp_set_num_threads(S)
+    call omp_set_dynamic(.False.)
 
+    !$OMP PARALLEL DO &
+    !$OMP PRIVATE(ii, tmp_array)  
     do ii = 1,dim
       tmp_array = 0.0_dp
       tmp_array(ii,1) = 1.0_dp
       tmp_array = fun_gemv(tmp_array)
       out(ii) = tmp_array(ii,1)
-      ! print *, out(ii)
+      M = omp_get_num_threads()
+      print *, out(ii),M
     end do
+    !$OMP END PARALLEL DO
 
   end function extract_diagonal_free
 
